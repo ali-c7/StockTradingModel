@@ -408,19 +408,19 @@ def main():
         1. **Fetches Data**: Downloads historical stock data from Yahoo Finance
         2. **Engineers Features**: Calculates 50+ technical indicators (RSI, MACD, ADX, etc.)
         3. **Trains Model**: Uses Random Forest, XGBoost, or LightGBM
-        4. **Generates Signals**: Predicts **BUY or SELL only** (binary classification, no HOLD)
+        4. **Generates Signals**: Predicts **BUY, HOLD, or SELL** (3-class classification)
         5. **Backtests Strategy**: Simulates trading with Kelly Criterion position sizing
         6. **Analyzes Performance**: Calculates Sharpe ratio, returns, win rate, etc.
         
-        ### 📊 Expected Performance (Binary Classification)
-        - **Model Accuracy**: 50-70% (> 55% is good, > 60% is excellent!)
+        ### 📊 Expected Performance (3-Class Classification)
+        - **Model Accuracy**: 40-60% (3 classes harder than 2!)
         - **Sharpe Ratio**: 0.5-2.0 (> 1.5 is excellent)
-        - **Win Rate**: 45-60% (quality over quantity)
+        - **Win Rate**: 50-70% (HOLD reduces bad trades)
         
-        ### 💡 Why Binary (BUY vs SELL)?
-        - **Simpler**: Only 2 classes instead of 3
-        - **Higher Accuracy**: Easier for model to learn
-        - **Clear Signals**: Every prediction is actionable
+        ### 💡 Why 3-Class (BUY, HOLD, SELL)?
+        - **More Realistic**: Not every day requires action
+        - **Reduces Overtrading**: HOLD = "don't trade" (saves on fees)
+        - **Better Risk Management**: Only trade when there's a clear signal
         
         ### ⏱️ Processing Time
         - First run: ~1-2 minutes (downloading data + training)
@@ -446,6 +446,7 @@ def main():
         
         signal_colors = {
             'BUY': '#28A745',
+            'HOLD': '#FFC107',
             'SELL': '#DC3545'
         }
         

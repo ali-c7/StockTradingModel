@@ -327,7 +327,7 @@ class TradingSystem:
         proba = self.model.predict_proba(X_latest)[0]
         confidence = proba.max()
         
-        signal_names = {-1: 'SELL', 1: 'BUY'}
+        signal_names = {-1: 'SELL', 0: 'HOLD', 1: 'BUY'}
         
         return {
             'signal': signal,
@@ -335,8 +335,9 @@ class TradingSystem:
             'confidence': confidence,
             'date': X_latest.index[0],
             'probabilities': {
-                'SELL': proba[0],  # Index 0 = SELL probability
-                'BUY': proba[1],   # Index 1 = BUY probability
+                'SELL': proba[0],   # Index 0 = SELL probability
+                'HOLD': proba[1],   # Index 1 = HOLD probability
+                'BUY': proba[2],    # Index 2 = BUY probability
             }
         }
 

@@ -38,7 +38,7 @@ class BaselineModelTrainer:
         self.feature_names = None
         self.metrics = None
         self.label_encoder = LabelEncoder()
-        self.label_encoder.fit([-1, 1])  # Binary: SELL and BUY only (no HOLD)
+        self.label_encoder.fit([-1, 0, 1])  # 3-Class: SELL, HOLD, BUY
         
         # Initialize model
         if self.model_type == 'random_forest':
@@ -165,8 +165,8 @@ class BaselineModelTrainer:
             print(f"      F1 Score:       {metrics['f1']:.1%}")
             
             # Per-class breakdown
-            print(f"\n   📋 Classification Report (Binary):")
-            print(classification_report(y_test_encoded, y_pred_test_encoded, target_names=['SELL', 'BUY'], zero_division=0))
+            print(f"\n   📋 Classification Report (3-Class):")
+            print(classification_report(y_test_encoded, y_pred_test_encoded, target_names=['SELL', 'HOLD', 'BUY'], zero_division=0))
         
         return metrics
     
