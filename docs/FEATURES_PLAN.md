@@ -14,11 +14,11 @@ This document outlines all features and their implementation order for the Buy, 
 - [x] Add application header and description
 - [x] Implement basic navigation/layout structure
 
-### 1.2 User Input Controls
-- [ ] Ticker symbol input field with validation
-- [ ] Timeframe selector (dropdown: 1M, 3M, 6M, 1Y, 2Y, 5Y)
-- [ ] "Analyze" button to trigger prediction
-- [ ] Input error handling and user feedback messages
+### 1.2 User Input Controls ✅
+- [x] Ticker symbol input field with validation
+- [x] Timeframe selector (dropdown: 1M, 3M, 6M, 1Y, 2Y, 5Y)
+- [x] "Analyze" button to trigger prediction
+- [x] Input error handling and user feedback messages
 
 ### 1.3 Results Display Framework
 - [ ] Create placeholder sections for signal display
