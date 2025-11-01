@@ -1,0 +1,153 @@
+---
+alwaysApply: true
+---
+
+# Tech Stack
+- **UI Framework**: Streamlit  
+- **Pattern**: Modular / Functional  
+- **Language**: Python  
+- **Toolkit**: pandas, numpy, plotly, scikit-learn (as needed)  
+
+# Projects
+- **UI**: `ui/` (Streamlit interface or presentation layer)  
+- **Data**: `data/` (data fetching, preprocessing, caching)  
+- **Logic**: `core/` (core business logic, calculations, or algorithms)  
+- **Visualization**: `plots/` (Plotly or Matplotlib visualizations)  
+- **Tests**: `tests/` (unit and integration tests)  
+- **Docs**: `docs/` (architecture, design, and workflow documentation)  
+
+# File Structure
+- **UI**: `ui/{Feature}/{feature}_ui.py`  
+- **Data**: `data/{Feature}/{feature}_data.py`  
+- **Logic**: `core/{Feature}/{feature}_core.py`  
+- **Visualization**: `plots/{Feature}/{feature}_plot.py`  
+- **Tests**: `tests/{Feature}/{feature}_tests.py`  
+
+# Naming Conventions
+- **Modules**: `snake_case`
+- **Classes**: `PascalCase`
+- **Functions & Variables**: `snake_case`
+- **Constants**: `UPPER_SNAKE_CASE`
+- **Tests**: `{feature}_tests.py`
+- **Environment files**: `.env`, `config.yaml`, or `settings.py`
+
+# Cursor Rules
+
+## General coding principles
+- Follow **modular design** — each file serves a single, clear responsibility  
+- **Keep functions small** and focused; prefer decomposition over nesting  
+- **Avoid useless comments** — write comments explaining *why*, not *what*  
+- Avoid **magic numbers/strings** — define constants at the top or in `config.py`  
+- Prefer **readability over cleverness**  
+- Use **async/await** when appropriate (API calls, I/O, etc.)  
+- Write **pure functions** whenever possible — minimize side effects  
+- Maintain **type hints** in all public functions  
+- Keep **imports organized**: standard library → third-party → local modules  
+- Log meaningful messages; avoid silent failures or print statements  
+- Handle exceptions gracefully and explicitly  
+- Prioritize **deterministic, reproducible** outputs  
+
+## Third-party libraries
+- Allowed: `pandas`, `numpy`, `plotly`, `streamlit`, `requests`, `scikit-learn`, `matplotlib`, `ta` (technical analysis), `joblib`  
+- Optional: `lightgbm`, `xgboost`, `openpyxl`, `sqlalchemy` (if needed)  
+- Only import heavy libraries inside functions if rarely used  
+
+## When asked to design a feature
+- Create a short plan file under `docs/plan_{feature}.md`  
+- Define inputs, outputs, expected user flow, and UI sketch  
+- Include acceptance criteria and test coverage notes  
+
+## When asked to review a feature
+- Use `docs/code_review.md`  
+- Check naming consistency, type safety, and code readability  
+- Ensure functions are small, testable, and properly documented  
+
+## When writing documentation
+- Refer to `docs/write_docs.md`  
+- Each function/class should include:
+  - Purpose  
+  - Parameters and types  
+  - Return value(s)  
+  - Side effects (if any)  
+
+## When finishing a feature
+- Update `FEATURE_PLAN.md` to reflect progress  
+- Include links to related PRs or commits  
+- Mark unimplemented items as deferred rather than deleting them  
+
+## When creating a Data module
+- Define in `data/{Feature}`  
+- Include data retrieval, caching, cleaning, and preprocessing  
+- Avoid business logic in data modules  
+- Use caching (`functools.lru_cache` or Streamlit `st.cache_data`)  
+
+## When creating a Logic/Core module
+- Define in `core/{Feature}`  
+- Contain main algorithms, calculations, or model logic  
+- Keep functions pure and deterministic  
+- Write small, unit-testable functions  
+
+## When creating a UI module
+- Define in `ui/{Feature}`  
+- Use Streamlit for layout and interactivity  
+- Keep UI declarative and minimal  
+- Separate user interface from data logic — no heavy computation in UI scripts  
+
+## When creating a Visualization module
+- Define in `plots/{Feature}`  
+- Use `plotly` or `matplotlib`  
+- Keep visualizations consistent in style (color palette, font size, etc.)  
+- Return figures; do not render directly inside logic modules  
+
+## When adding any logic
+- Write tests under `tests/{Feature}`  
+- Cover both **happy path** and **edge cases**  
+- Keep test functions short and descriptive  
+- Do not test trivial getters/setters  
+- Use mock data for reproducibility  
+
+## Testing & QA
+- Use `pytest` or `unittest`  
+- All public functions should be testable without side effects  
+- Each module must include a minimal smoke test  
+- Run automated tests before every merge  
+
+## Version Control
+- Use **Conventional Commits**:  
+  - `feat:` new functionality  
+  - `fix:` bug fix  
+  - `refactor:` internal improvements  
+  - `docs:` documentation updates  
+  - `chore:` maintenance tasks  
+- Keep commits atomic and descriptive  
+- Include short summaries in PRs  
+
+## Performance
+- Use vectorized operations (pandas/numpy)  
+- Avoid premature optimization; profile first if needed  
+- Release resources (files, DB connections, sessions) properly  
+
+## Collaboration
+- Discuss architectural decisions in `docs/architecture.md`  
+- Keep code reviews focused on clarity, testability, and maintainability  
+- Avoid “clever hacks” that reduce readability  
+- Prefer clear data pipelines over complex one-liners  
+
+## Security & Reliability
+- Never commit credentials or API keys  
+- Validate all user inputs (especially from UIs or APIs)  
+- Use parameterized queries or ORM when interacting with databases  
+- Handle network errors with retry logic  
+- Ensure app degrades gracefully on failures  
+
+## Documentation Standards
+- Each public function/class must have a docstring  
+- Maintain a `README.md` summarizing setup, usage, and structure  
+- Use Markdown for architecture notes and developer docs  
+
+## Acceptance
+- Code runs cleanly after `pip install -r requirements.txt`  
+- Passes lint (`flake8` or `black`)  
+- Tests pass locally before merge  
+- UI launches without runtime errors  
+
