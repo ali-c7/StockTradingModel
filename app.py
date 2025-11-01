@@ -21,6 +21,9 @@ from plots.stock.stock_plot import create_price_chart
 # Import technical indicators
 from data.indicators.indicators_data import calculate_all_indicators
 
+# Import ML predictor
+from core.signals.signal_predictor import SignalPredictor
+
 
 def initialize_session_state():
     """Initialize session state variables"""
@@ -52,6 +55,16 @@ def initialize_session_state():
     # Chart display timeframe (separate from analysis timeframe)
     if 'chart_timeframe' not in st.session_state:
         st.session_state.chart_timeframe = '6M'
+    
+    # Validation settings
+    if 'run_validation' not in st.session_state:
+        st.session_state.run_validation = False
+    if 'validation_results' not in st.session_state:
+        st.session_state.validation_results = None
+    if 'show_label_viz' not in st.session_state:
+        st.session_state.show_label_viz = False
+    if 'label_viz_data' not in st.session_state:
+        st.session_state.label_viz_data = None
 
 
 def validate_ticker(ticker: str) -> tuple[bool, str]:
@@ -78,65 +91,6 @@ def validate_ticker(ticker: str) -> tuple[bool, str]:
         return False, "Invalid ticker format. Use only letters, numbers, and . - = ^"
     
     return True, ""
-
-
-def generate_mock_results(ticker: str, timeframe: str) -> dict:
-    """
-    Generate mock prediction results for demonstration
-    
-    Parameters:
-        ticker: Stock ticker symbol
-        timeframe: Analysis timeframe
-    
-    Returns:
-        Dictionary containing mock results data
-    """
-    # Set random seed based on ticker for consistency
-    random.seed(hash(ticker) % 1000)
-    
-    # Generate random signal
-    signals = ["BUY", "SELL", "HOLD"]
-    signal = random.choice(signals)
-    
-    # Generate mock data
-    base_price = random.uniform(50, 500)
-    price_change = random.uniform(-15, 15)
-    price_change_pct = (price_change / base_price) * 100
-    
-    # Signal-specific reasoning
-    reasoning_map = {
-        "BUY": [
-            "RSI indicates oversold conditions. MACD showing bullish crossover. Strong volume support.",
-            "Price broke above key resistance. Positive momentum indicators. Volume trending up.",
-            "Technical indicators align for upward movement. Support level holding strong."
-        ],
-        "SELL": [
-            "RSI shows overbought conditions. MACD bearish divergence detected. Weakening volume.",
-            "Price approaching resistance with negative momentum. Volume declining.",
-            "Multiple indicators suggest downward pressure. Resistance level rejection observed."
-        ],
-        "HOLD": [
-            "Mixed signals across indicators. Price consolidating in range. Wait for clearer direction.",
-            "Neutral momentum. No strong buy or sell signals detected. Market indecision.",
-            "Technical indicators inconclusive. Sideways trend observed. Patience recommended."
-        ]
-    }
-    
-    return {
-        "signal": signal,
-        "confidence": round(random.uniform(65, 92), 1),
-        "current_price": round(base_price, 2),
-        "price_change": round(price_change, 2),
-        "price_change_pct": round(price_change_pct, 2),
-        "volume": f"{random.randint(1, 50)}M",
-        "rsi": round(random.uniform(20, 80), 1),
-        "macd": round(random.uniform(-5, 5), 2),
-        "bb_status": random.choice(["Above Upper Band", "Below Lower Band", "Within Bands"]),
-        "reasoning": random.choice(reasoning_map[signal]),
-        "accuracy": round(random.uniform(55, 75), 1),
-        "last_updated": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-        "signals_analyzed": random.randint(100, 500)
-    }
 
 
 def main():
@@ -190,6 +144,30 @@ def main():
         
         st.divider()
         
+        # Model Validation Settings
+        st.markdown("### 🔬 Model Validation")
+        
+        st.session_state.run_validation = st.checkbox(
+            "Run comprehensive validation",
+            value=st.session_state.get('run_validation', False),
+            help="Test model on 5 different time windows to verify consistency"
+        )
+        
+        if st.session_state.run_validation:
+            st.info("⏱️ Adds ~5-10 seconds to analysis")
+            st.caption("Tests if the model works consistently over time.")
+        
+        st.session_state.show_label_viz = st.checkbox(
+            "Show label visualization",
+            value=st.session_state.get('show_label_viz', False),
+            help="Visualize how Buy/Sell/Hold labels are distributed across time"
+        )
+        
+        if st.session_state.show_label_viz:
+            st.caption("📊 Shows price chart with label markers and distribution")
+        
+        st.divider()
+        
         # Advanced Settings
         with st.expander("🔧 Advanced Settings"):
             st.markdown("**Coming in Phase 3:**")
@@ -238,6 +216,19 @@ def main():
                - BB: Length=20, StdDev=2
             3. Check the **rightmost value** (latest day)
             4. Values should match (±0.1 due to rounding)
+            
+            **Model Validation:**
+            - Enable "Run comprehensive validation" to test model on 5 time windows
+            - Shows mean accuracy, variability, and consistency
+            - Helps verify model isn't just lucky on recent data
+            - Takes 5-10 extra seconds
+            
+            **Label Visualization:**
+            - Enable "Show label visualization" to see training labels
+            - Shows WHERE the model identifies Buy/Sell/Hold opportunities
+            - Displays label distribution and future returns
+            - Useful for debugging poor model performance
+            - Can reveal class imbalance issues
             """)
         
         # Documentation Links
@@ -257,6 +248,8 @@ def main():
             if st.button("🔄 Clear Analysis", use_container_width=True):
                 st.session_state.analysis_triggered = False
                 st.session_state.prediction_result = None
+                st.session_state.validation_results = None
+                st.session_state.label_viz_data = None
                 st.session_state.ticker = ''
                 st.session_state.last_ticker = ''
                 st.session_state.last_timeframe = ''
@@ -403,20 +396,35 @@ def main():
                         # Calculate real technical indicators
                         indicators = calculate_all_indicators(stock_df)
                     
-                    with st.spinner("🤖 Generating prediction..."):
-                        time.sleep(0.5)  # Brief pause for UX
-                        # Generate mock signal (Buy/Sell/Hold still mock for Phase 3)
-                        mock_signal_data = generate_mock_results(ticker_input, timeframe_value)
-                        
-                        # Combine real data with mock signal
-                        st.session_state.prediction_result = {
-                            # Mock signal (Phase 3 will make this real)
-                            "signal": mock_signal_data["signal"],
-                            "confidence": mock_signal_data["confidence"],
-                            "reasoning": mock_signal_data["reasoning"],
-                            "accuracy": mock_signal_data["accuracy"],
-                            "last_updated": mock_signal_data["last_updated"],
-                            "signals_analyzed": mock_signal_data["signals_analyzed"],
+                    with st.spinner("🤖 Training ML model and generating prediction..."):
+                        try:
+                            # Train ML model and get prediction
+                            predictor = SignalPredictor(ticker_input, timeframe_value)
+                            metrics = predictor.train(verbose=False)
+                            prediction = predictor.predict_latest()
+                            
+                            # Run comprehensive validation if enabled
+                            if st.session_state.run_validation:
+                                with st.spinner("🔬 Running comprehensive validation (5 time windows)..."):
+                                    st.session_state.validation_results = predictor.run_comprehensive_validation(n_splits=5)
+                            
+                            # Capture label data for visualization if requested
+                            if st.session_state.show_label_viz:
+                                st.session_state.label_viz_data = {
+                                    'df': predictor.raw_data.copy(),
+                                    'labels': predictor.y.copy(),
+                                    'ticker': ticker_input
+                                }
+                            
+                            # Use real ML prediction
+                            st.session_state.prediction_result = {
+                                # Real ML signal!
+                                "signal": prediction["signal"],
+                                "confidence": prediction["confidence"],
+                                "reasoning": prediction["reasoning"],
+                                "accuracy": prediction["model_accuracy"],
+                                "last_updated": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                                "signals_analyzed": len(predictor.X),  # Number of training samples
                             
                             # Real price data
                             "current_price": price_info["price"],
@@ -440,8 +448,44 @@ def main():
                             # OHLCV data for charting
                             "data": stock_df,
                         }
-                    
-                    st.success("✅ Analysis complete! See results below.")
+                        
+                            st.success(f"✅ Analysis complete! Model trained with {metrics['accuracy']:.1%} accuracy.")
+                        
+                        except Exception as e:
+                            st.error(f"❌ ML prediction failed: {str(e)}")
+                            st.info("Showing data without ML prediction...")
+                            
+                            # Fallback: show data without prediction
+                            st.session_state.prediction_result = {
+                                "signal": "HOLD",
+                                "confidence": 0.33,
+                                "reasoning": "ML model training failed. Please try again.",
+                                "accuracy": 0.0,
+                                "last_updated": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                                "signals_analyzed": 0,
+                                
+                                # Real price data
+                                "current_price": price_info["price"],
+                                "price_change": price_info["change"],
+                                "price_change_pct": price_info["change_pct"],
+                                "volume": price_info["volume"],
+                                "is_realtime": price_info["is_realtime"],
+                                "security_name": stock_info["name"],
+                                
+                                # Real technical indicators
+                                "rsi": indicators["rsi"],
+                                "rsi_status": indicators["rsi_status"],
+                                "macd": indicators["macd"],
+                                "macd_diff": indicators["macd_diff"],
+                                "macd_trend": indicators["macd_trend"],
+                                "bb_status": indicators["bb_position"],
+                                "bb_upper": indicators["bb_upper"],
+                                "bb_middle": indicators["bb_middle"],
+                                "bb_lower": indicators["bb_lower"],
+                                
+                                # OHLCV data for charting
+                                "data": stock_df,
+                            }
                 else:
                     # Data validation failed, error already shown
                     st.session_state.analysis_triggered = False
@@ -488,7 +532,7 @@ def main():
             with metric_col3:
                 st.metric(
                     label="Model Accuracy",
-                    value=f"{results['accuracy']}%"
+                    value=f"{results['accuracy']:.1%}"
                 )
         
         with col2:
@@ -508,11 +552,12 @@ def main():
             
             # Display signal with custom styling
             if st.session_state.show_confidence:
+                confidence_pct = results['confidence'] * 100  # Convert to percentage
                 st.markdown(f"""
                 <div style="background-color: {signal_color}; padding: 20px; border-radius: 10px; text-align: center;">
                     <h1 style="color: white; margin: 0;">{signal_emoji} {signal}</h1>
                     <p style="color: white; font-size: 18px; margin: 10px 0 0 0;">
-                        Confidence: {results['confidence']}%
+                        Confidence: {confidence_pct:.1f}%
                     </p>
                 </div>
                 """, unsafe_allow_html=True)
@@ -684,13 +729,139 @@ def main():
         perf_col1, perf_col2, perf_col3 = st.columns(3)
         
         with perf_col1:
-            st.metric("Model Accuracy", f"{results['accuracy']}%")
+            st.metric("Model Accuracy", f"{results['accuracy']:.1%}")
         with perf_col2:
             st.metric("Signals Analyzed", results['signals_analyzed'])
         with perf_col3:
             st.metric("Last Updated", results['last_updated'])
         
-        st.caption("💡 **Note**: These are mock results for demonstration. Real analysis will be implemented in Phase 2-3.")
+        # Display comprehensive validation results if available
+        if st.session_state.validation_results is not None:
+            st.divider()
+            st.subheader("🔬 Validation Results")
+            
+            val_results = st.session_state.validation_results
+            
+            # Summary metrics
+            val_col1, val_col2, val_col3, val_col4 = st.columns(4)
+            
+            with val_col1:
+                st.metric(
+                    "Mean Accuracy",
+                    f"{val_results['mean_accuracy']:.1%}",
+                    help="Average accuracy across all validation windows"
+                )
+            
+            with val_col2:
+                std_pct = val_results['std_accuracy'] * 100
+                st.metric(
+                    "Variability",
+                    f"±{std_pct:.1f}%",
+                    help="Standard deviation of accuracy across windows"
+                )
+            
+            with val_col3:
+                st.metric(
+                    "Min Accuracy",
+                    f"{val_results['min_accuracy']:.1%}",
+                    help="Worst performance across all windows"
+                )
+            
+            with val_col4:
+                st.metric(
+                    "Max Accuracy",
+                    f"{val_results['max_accuracy']:.1%}",
+                    help="Best performance across all windows"
+                )
+            
+            # Verdict badge
+            mean_acc = val_results['mean_accuracy']
+            consistent = val_results.get('consistent', False)
+            
+            if mean_acc < 0.40:
+                verdict = "❌ POOR"
+                color = "#FF4B4B"
+                message = "Model is not learning useful patterns. Try longer timeframe or different stock."
+            elif mean_acc < 0.50:
+                verdict = "⚠️ WEAK"
+                color = "#FFA500"
+                message = "Model has weak predictive power. Consider longer timeframe."
+            elif mean_acc < 0.60:
+                verdict = "✓ ACCEPTABLE"
+                color = "#4CAF50"
+                message = "Model is learning useful patterns. This is reasonable for stock prediction."
+            elif mean_acc < 0.70:
+                verdict = "✅ GOOD"
+                color = "#4CAF50"
+                message = "Model has strong predictive power. Better than most stock prediction models."
+            else:
+                verdict = "🎯 EXCELLENT"
+                color = "#4CAF50"
+                message = "Model has exceptional predictive power. This is rare for stock prediction!"
+            
+            consistency_msg = ""
+            if not consistent:
+                consistency_msg = " However, performance varies across time periods."
+            
+            st.markdown(f"""
+            <div style="background-color: {color}; padding: 15px; border-radius: 5px; margin: 10px 0;">
+                <h3 style="color: white; margin: 0;">{verdict}</h3>
+                <p style="color: white; margin: 5px 0 0 0;">{message}{consistency_msg}</p>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            # Show individual window accuracies
+            with st.expander("📊 Accuracy by Validation Window"):
+                if val_results['window_accuracies']:
+                    import pandas as pd
+                    window_df = pd.DataFrame({
+                        'Window': [f"Window {i+1}" for i in range(len(val_results['window_accuracies']))],
+                        'Accuracy': [f"{acc:.1%}" for acc in val_results['window_accuracies']],
+                        'Samples': val_results['window_sizes']
+                    })
+                    st.dataframe(window_df, hide_index=True, use_container_width=True)
+                    
+                    st.caption("Each window tests the model on a different time period to verify consistency.")
+        
+        # Label visualization section
+        if st.session_state.show_label_viz and st.session_state.label_viz_data is not None:
+            st.divider()
+            st.subheader("🎯 Label Visualization")
+            
+            from core.utils.label_visualizer import visualize_labels, create_label_summary
+            
+            viz_data = st.session_state.label_viz_data
+            
+            # Show label summary
+            summary = create_label_summary(viz_data['labels'])
+            
+            sum_col1, sum_col2, sum_col3, sum_col4 = st.columns(4)
+            
+            with sum_col1:
+                st.metric("Total Labels", summary['total'])
+            with sum_col2:
+                st.metric("BUY", f"{summary['buy']} ({summary['buy_pct']:.1f}%)")
+            with sum_col3:
+                st.metric("HOLD", f"{summary['hold']} ({summary['hold_pct']:.1f}%)")
+            with sum_col4:
+                st.metric("SELL", f"{summary['sell']} ({summary['sell_pct']:.1f}%)")
+            
+            # Check for severe imbalance
+            if summary['imbalance_score'] > 100:  # More than 50% deviation from 33.33% ideal
+                st.warning("⚠️ **Severe class imbalance detected!** This can significantly hurt model performance. "
+                          "Try adjusting the threshold or forward_days parameters.")
+            elif summary['imbalance_score'] > 60:
+                st.info("ℹ️ **Moderate class imbalance.** The model may have difficulty learning some signal types.")
+            
+            # Create and display visualization
+            with st.spinner("Creating label visualization..."):
+                fig = visualize_labels(viz_data['df'], viz_data['labels'], viz_data['ticker'])
+                st.plotly_chart(fig, use_container_width=True)
+            
+            st.caption("**How to read this chart:**")
+            st.caption("• **Top panel**: Stock price with Buy (🟢), Sell (🔴), and Hold (🟠) markers")
+            st.caption("• **Middle panel**: Label distribution over time (stacked bars)")
+            st.caption("• **Bottom panel**: Future returns that generated the labels (threshold lines at ±1%)")
     
     else:
         # Show placeholders when no analysis has been run

@@ -103,41 +103,56 @@ This document outlines all features and their implementation order for the Buy, 
 
 ---
 
-## Phase 3: Prediction Model
+## Phase 3: Prediction Model ✅
 
-### 3.1 Rule-Based Model (MVP)
-- [ ] Create `core/signals/signal_core.py` module
-- [ ] Define Buy/Sell/Hold signal rules based on indicators
-  - RSI thresholds (oversold/overbought)
-  - MACD crossovers
-  - Bollinger Band breakouts
-  - Volume confirmation
-- [ ] Implement signal aggregation logic (combine multiple indicators)
-- [ ] Add confidence scoring for signals
-- [ ] Create signal explanation generator (why Buy/Sell/Hold)
+### 3.1 Label Generation ✅
+- [x] Create `core/models/label_generator.py` module
+- [x] Create label generation logic (future returns → Buy/Sell/Hold)
+- [x] Implement configurable forward_days and threshold
+- [x] Add label distribution analysis
+- [x] Add threshold optimization function
 
-### 3.2 ML Model Infrastructure
-- [ ] Create `core/models/model_core.py` module
-- [ ] Design model training pipeline architecture
-- [ ] Implement data preparation for ML (X, y splits)
-- [ ] Create label generation logic (future returns → Buy/Sell/Hold)
-- [ ] Add feature scaling pipeline
-- [ ] Implement model serialization (save/load)
+### 3.2 Feature Engineering ✅
+- [x] Create `core/models/feature_engineer.py` module
+- [x] Add moving averages (SMA 20, 50)
+- [x] Add momentum features (5-day, 10-day)
+- [x] Add volume features (ratio, moving average)
+- [x] Add volatility features (ATR, volatility ratio)
+- [x] Add Bollinger Band derived features (width, position)
+- [x] Add lagged features (RSI, MACD, Close)
+- [x] Add rate of change features
+- [x] Create feature validation function
+- [x] Total: 25+ engineered features
 
-### 3.3 ML Model Implementation
-- [ ] Implement Logistic Regression baseline model
-- [ ] Add Random Forest classifier
-- [ ] Implement Gradient Boosting (LightGBM/XGBoost)
-- [ ] Create ensemble model (combine multiple models)
-- [ ] Add hyperparameter tuning utilities
-- [ ] Implement model selection logic
+### 3.3 ML Model Training ✅
+- [x] Create `core/models/model_trainer.py` module
+- [x] Implement Random Forest classifier
+- [x] Add time-series aware train/test split (80/20)
+- [x] Implement class weighting for imbalance
+- [x] Add model evaluation metrics (accuracy, per-class)
+- [x] Implement model serialization (save/load with joblib)
+- [x] Add feature importance extraction
+- [x] Add prediction probability methods
+- [x] Retrain on full data for production
 
-### 3.4 Walk-Forward Validation
-- [ ] Create `core/validation/validation_core.py` module
-- [ ] Implement time-series cross-validation
-- [ ] Add walk-forward testing framework
-- [ ] Create train/test split with expanding window
-- [ ] Implement out-of-sample prediction tracking
+### 3.4 Prediction Interface ✅
+- [x] Create `core/signals/signal_predictor.py` module
+- [x] Implement SignalPredictor class
+- [x] Add complete training pipeline
+- [x] Add predict_latest() for current prediction
+- [x] Add predict_historical() for backtesting
+- [x] Generate reasoning from indicator values
+- [x] Return confidence scores and probabilities
+- [x] Add metrics summary function
+
+### 3.5 App Integration ✅
+- [x] Import SignalPredictor into app.py
+- [x] Replace mock predictions with real ML
+- [x] Add error handling for ML failures
+- [x] Display real confidence scores
+- [x] Display real reasoning
+- [x] Show model accuracy in UI
+- [x] Remove deprecated mock function
 
 **Deliverable**: Functional prediction model (rule-based + ML) with validation framework
 
@@ -151,25 +166,41 @@ This document outlines all features and their implementation order for the Buy, 
 - [ ] Add simple profit/loss tracking
 - [ ] Create user-friendly performance summary
 
-### 4.2 Backtesting Engine
+### 4.2 Backtesting Engine (Portfolio Simulation)
 - [ ] Create `core/backtest/backtest_core.py` module
-- [ ] Implement historical signal generation
-- [ ] Add simple trade simulation (entry/exit points)
-- [ ] Calculate basic returns over time
+- [ ] Implement portfolio simulator with $1000 initial capital
+- [ ] Add realistic trade execution:
+  - Transaction costs (commission fees)
+  - Slippage modeling
+  - Position sizing (Kelly Criterion or fixed %)
+- [ ] Track portfolio metrics:
+  - Total return (%)
+  - Win rate (profitable trades %)
+  - Max drawdown
+  - Sharpe ratio
+  - Best/worst trades
+- [ ] Generate trade history log (date, action, price, shares, P/L)
+- [ ] Calculate time-series portfolio value
+- [ ] Add comparison vs Buy & Hold strategy
+- [ ] Export trade log to CSV (optional)
 
 ### 4.3 Visualization Modules
-- [ ] Create `plots/stock/stock_plot.py` for price charts
-- [ ] Implement candlestick chart with volume
+- [ ] Update `plots/stock/stock_plot.py` for enhanced price charts
 - [ ] Add historical buy/sell/hold signal markers on price chart
   - Green markers (▲) for historical BUY signals
   - Red markers (▼) for historical SELL signals
   - Yellow markers (●) for historical HOLD signals
 - [ ] Add technical indicators overlay on price chart (optional toggles)
-- [ ] Add `plots/indicators/indicators_plot.py`
+- [ ] Create `plots/performance/portfolio_plot.py`
+  - Portfolio value over time (line chart)
+  - Comparison with buy & hold strategy
+  - Trade markers (buy/sell points)
+  - Drawdown visualization
+  - Cumulative returns chart
+- [ ] Add `plots/indicators/indicators_plot.py` (optional, Phase 5)
   - RSI chart with threshold lines
   - MACD histogram and signal lines
   - Bollinger Bands visualization
-- [ ] Create simple performance chart (cumulative returns over time)
 
 ### 4.4 Integration & UI Updates
 - [ ] Connect data pipeline to UI
