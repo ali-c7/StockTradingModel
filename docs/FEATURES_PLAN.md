@@ -40,34 +40,57 @@ This document outlines all features and their implementation order for the Buy, 
 
 ## Phase 2: Data Pipeline
 
-### 2.1 Data Retrieval Module
-- [ ] Create `data/stock/stock_data.py` module
-- [ ] Implement Yahoo Finance data fetching function
-- [ ] Add date range calculation based on timeframe
-- [ ] Implement data validation (check for empty/invalid data)
-- [ ] Add caching mechanism (`@st.cache_data`) for performance
-- [ ] Handle API errors and edge cases (delisted stocks, invalid tickers)
-- [ ] Store OHLCV data (Open, High, Low, Close, Volume) for chart visualization
+### 2.0 Ticker List & Searchable Dropdown ✅
+- [x] Create `data/tickers/ticker_list_data.py` module
+- [x] Fetch S&P 500 ticker list from Wikipedia at app startup
+- [x] Store ticker list with company names in cache (24-hour TTL)
+- [x] Replace text input with searchable `st.selectbox` for ticker selection
+- [x] Implement filtering/search functionality (built-in with selectbox)
+- [x] Add option to manually enter ticker if not in list
+- [x] Cache ticker list to avoid repeated fetching
+- [x] Add lxml dependency for pandas read_html()
 
-### 2.2 Data Preprocessing
-- [ ] Create data cleaning function (handle missing values, duplicates)
-- [ ] Implement outlier detection and handling
-- [ ] Add data normalization/scaling utilities
-- [ ] Create data split functions (train/validation/test)
-- [ ] Add date alignment and resampling utilities
+### 2.1 Data Retrieval Module ✅
+- [x] Create `data/stock/stock_data.py` module
+- [x] Implement Yahoo Finance data fetching function
+- [x] Add date range calculation based on timeframe
+- [x] Implement data validation (check for empty/invalid data)
+- [x] Add caching mechanism (`@st.cache_data`) for performance
+- [x] Handle API errors and edge cases (delisted stocks, invalid tickers)
+- [x] Store OHLCV data (Open, High, Low, Close, Volume) for chart visualization
+- [x] Replace mock prices with real Yahoo Finance data
+- [x] Get current price, change, and volume from real data
 
-### 2.3 Technical Indicators Computation
-- [ ] Create `data/indicators/indicators_data.py` module
-- [ ] Implement RSI (Relative Strength Index) calculation
-- [ ] Implement MACD (Moving Average Convergence Divergence)
-- [ ] Implement Bollinger Bands calculation
-- [ ] Implement Volume Moving Average
-- [ ] Add SMA (Simple Moving Average) - 20, 50, 200 day
-- [ ] Add EMA (Exponential Moving Average)
-- [ ] Create indicator validation and quality checks
-- [ ] Implement indicator caching
+### 2.2 Basic Price Visualization ✅
+- [x] Create `plots/stock/stock_plot.py` module
+- [x] Implement candlestick chart for price visualization
+- [x] Use Plotly for interactive chart (zoom, pan, hover)
+- [x] Display price over selected timeframe
+- [x] Add volume subplot below price chart
+- [x] Integrate into UI to replace chart placeholder
+- [x] Color-coded volume bars (green/red)
+- [x] Interactive tooltips and controls
 
-### 2.4 Feature Engineering
+### 2.3 Data Preprocessing ⏭️
+- [SKIPPED] Clean Yahoo Finance data (not needed - data is already clean)
+- [SKIPPED] Handle missing values (rare with Yahoo Finance)
+- [SKIPPED] Outlier detection (will handle in Phase 3 if needed)
+
+### 2.4 Technical Indicators Computation ✅
+- [x] Create `data/indicators/indicators_data.py` module
+- [x] Implement RSI (Relative Strength Index) calculation
+- [x] Implement MACD (Moving Average Convergence Divergence)
+- [x] Implement Bollinger Bands calculation
+- [x] Create indicator interpretation functions (overbought/oversold etc.)
+- [x] Replace mock indicator values with real calculations
+- [x] Display real RSI, MACD, and Bollinger Bands data
+- [x] Add status indicators (Overbought, Oversold, Bullish, Bearish)
+- [ ] Implement Volume Moving Average (future enhancement)
+- [ ] Add SMA (Simple Moving Average) - 20, 50, 200 day (future enhancement)
+- [ ] Add EMA (Exponential Moving Average) (future enhancement)
+- [ ] Unit tests for indicator calculations (Phase 5)
+
+### 2.5 Feature Engineering
 - [ ] Create `data/features/features_data.py` module
 - [ ] Generate price momentum features
 - [ ] Create volatility features

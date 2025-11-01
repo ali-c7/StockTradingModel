@@ -1,9 +1,12 @@
 # Core dependencies
 streamlit>=1.28.0
 
-# Data processing (for future phases)
+# Data processing
 pandas>=2.0.0
 numpy>=1.24.0
+lxml>=4.9.0  # Required for pandas read_html() to scrape ticker lists
+html5lib>=1.1  # Alternative HTML parser for pandas read_html()
+beautifulsoup4>=4.11.0  # HTML/XML parser
 
 # Data source (for future phases)
 yfinance>=0.2.0
