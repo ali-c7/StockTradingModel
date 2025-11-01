@@ -20,21 +20,21 @@ This document outlines all features and their implementation order for the Buy, 
 - [x] "Analyze" button to trigger prediction
 - [x] Input error handling and user feedback messages
 
-### 1.3 Results Display Framework
-- [ ] Create placeholder sections for signal display
-- [ ] Design layout for prediction results (Buy/Sell/Hold)
-- [ ] Add section for stock price chart
-- [ ] Add section for technical indicators visualization
-- [ ] Add section for model performance metrics
+### 1.3 Results Display Framework ✅
+- [x] Create placeholder sections for signal display
+- [x] Design layout for prediction results (Buy/Sell/Hold)
+- [x] Add section for stock price chart
+- [x] Add section for technical indicators visualization
+- [x] Add section for model performance metrics
 
-### 1.4 UI Polish
-- [ ] Add loading spinners for long operations
-- [ ] Implement session state management
-- [ ] Add sidebar for configuration options
-- [ ] Style components with custom CSS (optional)
-- [ ] Add app footer with disclaimers
+### 1.4 UI Polish ✅
+- [x] Add loading spinners for long operations
+- [x] Implement session state management
+- [x] Add sidebar for configuration options
+- [x] Style components with custom CSS (optional)
+- [x] Add app footer with disclaimers
 
-**Deliverable**: Working Streamlit UI that accepts inputs and displays mock results
+**Deliverable**: Polished Streamlit UI with sidebar configuration and display preferences
 
 ---
 
@@ -47,6 +47,7 @@ This document outlines all features and their implementation order for the Buy, 
 - [ ] Implement data validation (check for empty/invalid data)
 - [ ] Add caching mechanism (`@st.cache_data`) for performance
 - [ ] Handle API errors and edge cases (delisted stocks, invalid tickers)
+- [ ] Store OHLCV data (Open, High, Low, Close, Volume) for chart visualization
 
 ### 2.2 Data Preprocessing
 - [ ] Create data cleaning function (handle missing values, duplicates)
@@ -136,13 +137,16 @@ This document outlines all features and their implementation order for the Buy, 
 ### 4.3 Visualization Modules
 - [ ] Create `plots/stock/stock_plot.py` for price charts
 - [ ] Implement candlestick chart with volume
-- [ ] Add technical indicators overlay on price chart
-- [ ] Create `plots/signals/signal_plot.py` for Buy/Sell/Hold markers
+- [ ] Add historical buy/sell/hold signal markers on price chart
+  - Green markers (▲) for historical BUY signals
+  - Red markers (▼) for historical SELL signals
+  - Yellow markers (●) for historical HOLD signals
+- [ ] Add technical indicators overlay on price chart (optional toggles)
 - [ ] Add `plots/indicators/indicators_plot.py`
   - RSI chart with threshold lines
   - MACD histogram and signal lines
   - Bollinger Bands visualization
-- [ ] Create simple performance chart (cumulative returns)
+- [ ] Create simple performance chart (cumulative returns over time)
 
 ### 4.4 Integration & UI Updates
 - [ ] Connect data pipeline to UI
