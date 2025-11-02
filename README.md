@@ -4,6 +4,26 @@
 
 ---
 
+## 🛠️ About This Project
+
+This project served as a hands-on exploration of setting up **proper Cursor AI workflows** and establishing best practices for AI-assisted development. In addition to building the trading signal predictor, I configured comprehensive Cursor rules and templates to ensure:
+
+- **Modular Architecture**: Clear separation between UI, data, core logic, and visualization layers
+- **Consistent Coding Standards**: Type hints, docstrings, naming conventions, and code organization
+- **Structured Workflows**: Templates for feature planning, code reviews, product briefs, and documentation
+- **Development Best Practices**: Testing guidelines, version control conventions, and documentation standards
+
+The Cursor configuration includes:
+- Custom rules file (`.cursor/rules/generalrudes.mdc`) defining tech stack, file structure, and coding principles
+- Template files for feature planning (`plan_feature.md`), code reviews (`code_review.md`), and product briefs (`product_brief.md`)
+- Guidelines for maintaining clean, testable, and maintainable code
+
+This setup enables more efficient AI-assisted development by providing clear context and standards for the AI agent to follow when working on the codebase.
+
+> **⚠️ Important Note**: This project was **not** focused on creating the most accurate ML model possible. Instead, it was an exploration of **spec-driven development** capabilities—testing how effectively one can bootstrap a new project in a domain they're not deeply knowledgeable in by using clear specifications, structured workflows, and AI-assisted development. The ML model serves as a practical example to validate this approach, but optimizing model accuracy was not the primary goal.
+
+---
+
 ## 🎯 What This Does
 
 This is a **simplified machine learning trading signal predictor** that:
@@ -25,7 +45,7 @@ This is a **simplified machine learning trading signal predictor** that:
 ```bash
 # Clone the repository
 git clone https://github.com/ali-c7/Buy-Sell-Hold-Predictive-Model
-cd alpha.ai
+cd Buy-Sell-Hold-Predictive-Model
 
 # Create virtual environment
 python -m venv venv
@@ -120,11 +140,18 @@ Displays predictions on price chart with clear train/test distinction.
 ## 📁 Project Structure
 
 ```
-alpha.ai/
+Buy-Sell-Hold-Predictive-Model/
 ├── app.py                     # Main Streamlit app
 ├── requirements.txt            # Python dependencies
 ├── .gitignore                 # Git ignore rules
 ├── README.md                  # This file
+│
+├── .cursor/                   # Cursor AI workflow configuration
+│   ├── rules/
+│   │   └── generalrudes.mdc   # Cursor coding rules and standards
+│   ├── plan_feature.md        # Feature planning template
+│   ├── code_review.md         # Code review template
+│   └── product_brief.md       # Product brief template
 │
 ├── data/                      # Data fetching
 │   └── stock/
