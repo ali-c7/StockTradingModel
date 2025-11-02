@@ -2,7 +2,7 @@
 
 ## Summary
 
-Successfully cleaned up the project to focus only on `simplified_app.py`.
+Successfully cleaned up the project to focus only on `app.py` (the simplified version).
 
 ---
 
@@ -53,7 +53,7 @@ Successfully cleaned up the project to focus only on `simplified_app.py`.
 ## ✅ Files Kept
 
 ### Main Application
-- ✅ `simplified_app.py` - Streamlit app
+- ✅ `app.py` - Streamlit app
 - ✅ `requirements.txt` - Dependencies
 - ✅ `.gitignore` - Git rules
 - ✅ `README.md` - Project documentation (updated)
@@ -95,7 +95,7 @@ Successfully cleaned up the project to focus only on `simplified_app.py`.
 
 ```
 alpha.ai/
-├── simplified_app.py          # Main Streamlit app
+├── app.py                     # Main Streamlit app
 ├── requirements.txt            
 ├── .gitignore                 
 ├── README.md                  # Updated for simplified version
@@ -130,7 +130,7 @@ alpha.ai/
 
 1. **Test the app:**
    ```bash
-   streamlit run simplified_app.py
+   streamlit run app.py
    ```
 
 2. **Read the guides:**
@@ -147,7 +147,7 @@ alpha.ai/
 
 ## 📝 What Each Module Does
 
-### `simplified_app.py`
+### `app.py`
 - Main Streamlit UI
 - Orchestrates the workflow
 - Displays results and charts

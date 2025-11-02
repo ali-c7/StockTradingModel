@@ -43,7 +43,7 @@ pip install -r requirements.txt
 ### 2. Run the App
 
 ```bash
-streamlit run simplified_app.py
+streamlit run app.py
 ```
 
 ### 3. Configure & Analyze
@@ -121,7 +121,7 @@ Displays predictions on price chart with clear train/test distinction.
 
 ```
 alpha.ai/
-├── simplified_app.py          # Main Streamlit app
+├── app.py                     # Main Streamlit app
 ├── requirements.txt            # Python dependencies
 ├── .gitignore                 # Git ignore rules
 ├── README.md                  # This file

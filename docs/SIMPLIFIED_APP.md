@@ -2,7 +2,7 @@
 
 ## What Is This?
 
-`simplified_app.py` is a stripped-down version focusing on the **core concept**:
+`app.py` is a stripped-down version focusing on the **core concept**:
 1. Train a machine learning model
 2. Make predictions
 3. Visualize predictions on test data (data the model hasn't seen)
@@ -107,7 +107,7 @@ Visual Elements:
 
 ### 1. Start the app:
 ```bash
-streamlit run simplified_app.py
+streamlit run app.py
 ```
 
 ### 2. Configure settings:
@@ -164,9 +164,9 @@ Test region (green):
 
 ---
 
-## Differences from `app_new.py`
+## Differences from Complex Version
 
-| Feature | simplified_app.py | app_new.py |
+| Feature | app.py (Simple) | Full Version |
 |---------|-------------------|------------|
 | **Complexity** | ⭐ Simple | ⭐⭐⭐⭐⭐ Complex |
 | **Lines of Code** | ~400 | ~900 |
@@ -182,7 +182,7 @@ Test region (green):
 
 ## When To Use Which App
 
-### Use `simplified_app.py` when:
+### Use `app.py` (this version) when:
 - ✅ Learning how ML prediction works
 - ✅ Testing if a stock is predictable
 - ✅ Comparing different models quickly
@@ -204,7 +204,7 @@ Test region (green):
 
 ### Day 1: Start Simple
 ```bash
-streamlit run simplified_app.py
+streamlit run app.py
 ```
 - Test AAPL, NVDA, TSLA
 - See which is most predictable
@@ -218,10 +218,7 @@ streamlit run simplified_app.py
 - See how results change
 
 ### Day 4+: Go Complex (Optional)
-```bash
-streamlit run app_new.py
-```
-- Add backtesting
+- Add backtesting features
 - Add risk management
 - Optimize parameters
 - Prepare for real trading
@@ -301,8 +298,7 @@ streamlit run app_new.py
 ## Files Structure
 
 ```
-simplified_app.py           # Main app (THIS FILE)
-app_new.py                  # Complex version (for comparison)
+app.py                      # Main app (THIS FILE)
 core/                       # Shared core modules
   ├── features/             # Technical indicators
   ├── labels/               # Label generation
@@ -313,5 +309,5 @@ docs/                       # Documentation
 
 ---
 
-**Bottom Line:** `simplified_app.py` answers ONE question: "Can the model predict accurately on unseen data?" Everything else is stripped away. Perfect for learning and testing! 🎯
+**Bottom Line:** `app.py` answers ONE question: "Can the model predict accurately on unseen data?" Everything else is stripped away. Perfect for learning and testing! 🎯
 
