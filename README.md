@@ -44,8 +44,8 @@ This is a **simplified machine learning trading signal predictor** that:
 
 ```bash
 # Clone the repository
-git clone https://github.com/ali-c7/Buy-Sell-Hold-Predictive-Model
-cd Buy-Sell-Hold-Predictive-Model
+git clone https://github.com/ali-c7/StockTradingModel
+cd StockTradingModel
 
 # Create virtual environment
 python -m venv venv
