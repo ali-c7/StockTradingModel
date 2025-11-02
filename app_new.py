@@ -73,6 +73,107 @@ def create_equity_curve_chart(portfolio_history: pd.DataFrame, ticker: str) -> g
     return fig
 
 
+def create_predictions_chart(df: pd.DataFrame, signals: pd.Series, ticker: str, test_start_date=None) -> go.Figure:
+    """Create price chart showing ALL model predictions (not just executed trades)"""
+    fig = go.Figure()
+    
+    # Price line
+    fig.add_trace(go.Scatter(
+        x=df.index,
+        y=df['Close'],
+        mode='lines',
+        name='Price',
+        line=dict(color='gray', width=1.5)
+    ))
+    
+    # Align signals with price data
+    signals_aligned = signals.reindex(df.index)
+    
+    # Separate predictions by type and train/test
+    if test_start_date:
+        test_start_dt = pd.Timestamp(test_start_date)
+        
+        # Training predictions (small, faded)
+        train_mask = df.index < test_start_dt
+        train_buys = df[train_mask & (signals_aligned == 1)]
+        train_sells = df[train_mask & (signals_aligned == -1)]
+        
+        # Test predictions (LARGE, bold)
+        test_mask = df.index >= test_start_dt
+        test_buys = df[test_mask & (signals_aligned == 1)]
+        test_sells = df[test_mask & (signals_aligned == -1)]
+        
+        # Training predictions
+        if not train_buys.empty:
+            fig.add_trace(go.Scatter(
+                x=train_buys.index,
+                y=train_buys['Close'],
+                mode='markers',
+                name=f'Predict BUY - Train ({len(train_buys)})',
+                marker=dict(symbol='triangle-up', size=6, color='lightgreen', opacity=0.2)
+            ))
+        
+        if not train_sells.empty:
+            fig.add_trace(go.Scatter(
+                x=train_sells.index,
+                y=train_sells['Close'],
+                mode='markers',
+                name=f'Predict SELL - Train ({len(train_sells)})',
+                marker=dict(symbol='triangle-down', size=6, color='lightcoral', opacity=0.2)
+            ))
+        
+        # Test predictions (what really matters!)
+        if not test_buys.empty:
+            fig.add_trace(go.Scatter(
+                x=test_buys.index,
+                y=test_buys['Close'],
+                mode='markers',
+                name=f'🔮 Predict BUY - TEST ({len(test_buys)})',
+                marker=dict(symbol='triangle-up', size=10, color='lime', opacity=0.7)
+            ))
+        
+        if not test_sells.empty:
+            fig.add_trace(go.Scatter(
+                x=test_sells.index,
+                y=test_sells['Close'],
+                mode='markers',
+                name=f'🔮 Predict SELL - TEST ({len(test_sells)})',
+                marker=dict(symbol='triangle-down', size=10, color='red', opacity=0.7)
+            ))
+    else:
+        # No train/test split - show all predictions
+        buy_predictions = df[signals_aligned == 1]
+        sell_predictions = df[signals_aligned == -1]
+        
+        if not buy_predictions.empty:
+            fig.add_trace(go.Scatter(
+                x=buy_predictions.index,
+                y=buy_predictions['Close'],
+                mode='markers',
+                name=f'Predict BUY ({len(buy_predictions)})',
+                marker=dict(symbol='triangle-up', size=8, color='green', opacity=0.6)
+            ))
+        
+        if not sell_predictions.empty:
+            fig.add_trace(go.Scatter(
+                x=sell_predictions.index,
+                y=sell_predictions['Close'],
+                mode='markers',
+                name=f'Predict SELL ({len(sell_predictions)})',
+                marker=dict(symbol='triangle-down', size=8, color='red', opacity=0.6)
+            ))
+    
+    fig.update_layout(
+        title=f'{ticker} - ALL Model Predictions (Raw Output)',
+        xaxis_title='Date',
+        yaxis_title='Price ($)',
+        hovermode='x unified',
+        height=400
+    )
+    
+    return fig
+
+
 def create_trade_markers_chart(df: pd.DataFrame, trades: list, ticker: str, test_start_date=None) -> go.Figure:
     """Create price chart with trade markers, highlighting test data trades"""
     fig = go.Figure()
@@ -196,7 +297,7 @@ def create_trade_markers_chart(df: pd.DataFrame, trades: list, ticker: str, test
             ))
     
     fig.update_layout(
-        title=f'{ticker} - Price with Trade Signals',
+        title=f'{ticker} - Executed Trades Only',
         xaxis_title='Date',
         yaxis_title='Price ($)',
         hovermode='x unified',
@@ -294,7 +395,20 @@ def main():
                 step=0.005,
                 format="%.2f%%",
                 help="Return threshold for buy/sell signals"
-            ) 
+            )
+            
+            train_split = st.slider(
+                "Train/Test Split",
+                min_value=0.60,
+                max_value=0.90,
+                value=0.80,
+                step=0.05,
+                format="%.0f%%",
+                help="Percentage of data used for training (e.g., 80% = train on first 80%, test on last 20%)"
+            )
+            
+            # Show what this means
+            st.caption(f"📊 Split: {train_split:.0%} training, {1-train_split:.0%} testing")
             
             initial_capital = st.number_input(
                 "Initial Capital ($)",
@@ -333,7 +447,7 @@ def main():
                                 model_type=model_name,
                                 forward_days=forward_days,
                                 threshold=threshold,
-                                train_split=0.8,
+                                train_split=train_split,
                                 initial_capital=initial_capital,
                                 position_sizing=position_sizing
                             )
@@ -362,7 +476,7 @@ def main():
                             model_type=model_type,
                             forward_days=forward_days,
                             threshold=threshold,
-                            train_split=0.8,
+                            train_split=train_split,
                             initial_capital=initial_capital,
                             position_sizing=position_sizing
                         )
@@ -713,9 +827,9 @@ def main():
         
         # Charts in tabs
         if view_mode == "Simple":
-            tab1, tab2 = st.tabs(["📈 Equity Curve", "🎯 Trade Signals"])
+            tab1, tab2, tab_pred = st.tabs(["📈 Equity Curve", "🎯 Executed Trades", "🔮 Model Predictions"])
         else:
-            tab1, tab2, tab3, tab4 = st.tabs(["📈 Equity Curve", "🎯 Trade Signals", "🏆 Feature Importance", "📋 Trade Log"])
+            tab1, tab2, tab_pred, tab3, tab4 = st.tabs(["📈 Equity Curve", "🎯 Executed Trades", "🔮 Model Predictions", "🏆 Feature Importance", "📋 Trade Log"])
         
         with tab1:
             st.subheader("Portfolio Equity Curve")
@@ -726,22 +840,36 @@ def main():
             st.caption(f"Started with ${metrics['final_value'] - metrics['total_pnl']:,.0f}, ended with ${metrics['final_value']:,.0f}")
         
         with tab2:
-            st.subheader("Price Chart with Trade Signals")
+            st.subheader("Executed Trades Only")
+            st.caption("⚠️ **Important:** These are ACTUAL TRADES executed by the backtest, not all model predictions!")
             
-            # Train/Test split info
-            train_size = int(len(system.feature_data) * 0.8)
-            train_end_date = system.feature_data.index[train_size - 1]
-            test_start_date = system.feature_data.index[train_size]
+            # Train/Test split info - USE ACTUAL MODEL SPLIT, NOT FEATURE_DATA
+            # (feature_data includes NaN labels that were dropped during training)
+            train_end_date = system.X_train.index[-1]
+            test_start_date = system.X_test.index[0]
+            
+            # Show split info
+            st.info(f"📅 **Actual train/test split:** Training ends {train_end_date.strftime('%Y-%m-%d')}, Testing starts {test_start_date.strftime('%Y-%m-%d')}")
             
             col1, col2, col3 = st.columns([1, 1, 2])
             with col1:
-                st.metric("Training Period", f"{len(system.feature_data[:train_size])} days")
+                st.metric("Training Period", f"{len(system.X_train)} days")
             with col2:
-                st.metric("Testing Period", f"{len(system.feature_data[train_size:])} days")
+                st.metric("Testing Period", f"{len(system.X_test)} days") 
             with col3:
-                st.info(f"🎯 **Test split starts:** {test_start_date.strftime('%Y-%m-%d')} (model has NOT seen this data during training!)")
+                # Calculate how many test days have actually occurred
+                today = pd.Timestamp.now(tz=test_start_date.tz)
+                test_days_elapsed = min(len(system.X_test), max(0, (today - test_start_date).days))
+                st.metric("Test Days Elapsed", f"{test_days_elapsed}/{len(system.X_test)} days")
+            
+            st.info(f"🎯 **Test split:** {test_start_date.strftime('%Y-%m-%d')} to {system.X_test.index[-1].strftime('%Y-%m-%d')} (model has NOT seen this data during training!)")
             
             trades = backtest_results['trades']
+            
+            # Count test trades
+            test_start_dt_ts = pd.Timestamp(test_start_date)
+            test_trades = [t for t in trades if pd.Timestamp(t['date']) >= test_start_dt_ts]
+            st.info(f"📊 **Executed {len(test_trades)} trades in test period** (BUY only works if no position, SELL only works if position open)")
             
             # Create enhanced chart with train/test split visualization
             fig_trades = create_trade_markers_chart(system.feature_data, trades, system.ticker, test_start_date=test_start_date)
@@ -795,6 +923,85 @@ def main():
             
             st.caption(f"**Legend:** Small faded markers = Training data | 🎯 Large bold markers = TEST data (what matters!) | 🔶 Orange line = Train/Test split")
         
+        with tab_pred:
+            st.subheader("ALL Model Predictions (Raw Output)")
+            st.caption("🔮 **This shows EVERY prediction the model makes**, regardless of whether trades were executed")
+            
+            # Train/Test split info - USE ACTUAL MODEL SPLIT
+            train_end_date = system.X_train.index[-1]
+            test_start_date = system.X_test.index[0]
+            
+            # Get signals from results
+            signals = results['signals']
+            
+            # Count test predictions
+            test_mask = signals.index >= test_start_date
+            test_signals = signals[test_mask]
+            test_buys = (test_signals == 1).sum()
+            test_sells = (test_signals == -1).sum()
+            test_holds = (test_signals == 0).sum()
+            
+            col1, col2, col3, col4 = st.columns(4)
+            with col1:
+                st.metric("Test BUY Predictions", test_buys)
+            with col2:
+                st.metric("Test SELL Predictions", test_sells)
+            with col3:
+                st.metric("Test HOLD Predictions", test_holds)
+            with col4:
+                st.metric("Total Test Days", len(test_signals))
+            
+            st.warning(f"⚠️ **Why so few executed trades?** Even though the model predicts **{test_buys + test_sells} actionable signals** in the test period, only trades that meet position requirements (have/don't have open position) are executed!")
+            
+            # Create predictions chart
+            fig_predictions = create_predictions_chart(system.feature_data, signals, system.ticker, test_start_date=test_start_date)
+            
+            # Add shaded regions and train/test split line
+            test_start_dt = test_start_date.to_pydatetime()
+            train_end_dt = train_end_date.to_pydatetime()
+            data_start_dt = system.feature_data.index[0].to_pydatetime()
+            data_end_dt = system.feature_data.index[-1].to_pydatetime()
+            
+            fig_predictions.add_vrect(
+                x0=data_start_dt,
+                x1=train_end_dt,
+                fillcolor="blue",
+                opacity=0.05,
+                layer="below",
+                line_width=0
+            )
+            
+            fig_predictions.add_vrect(
+                x0=test_start_dt,
+                x1=data_end_dt,
+                fillcolor="green",
+                opacity=0.05,
+                layer="below",
+                line_width=0
+            )
+            
+            fig_predictions.add_vline(
+                x=test_start_dt,
+                line_dash="dash",
+                line_color="orange",
+                line_width=2
+            )
+            
+            fig_predictions.add_annotation(
+                x=test_start_dt,
+                y=1,
+                yref="paper",
+                text="← Test Data Starts",
+                showarrow=False,
+                font=dict(size=12, color="orange"),
+                xshift=5,
+                yshift=-10
+            )
+            
+            st.plotly_chart(fig_predictions, use_container_width=True)
+            
+            st.caption("**Legend:** Small faded = Training predictions | 🔮 Large = TEST predictions (raw model output) | Note: HOLD signals (0) are not shown")
+        
         if view_mode == "Advanced":
             with tab3:
                 st.subheader("Top 20 Most Important Features")
@@ -822,15 +1029,44 @@ def main():
                 
                 if len(trades_df) > 0:
                     trades_df['date'] = pd.to_datetime(trades_df['date'])
+                    
+                    # Add TRAIN/TEST column
+                    test_start_dt = system.X_test.index[0]
+                    trades_df['period'] = trades_df['date'].apply(
+                        lambda x: '🎯 TEST' if pd.Timestamp(x) >= test_start_dt else 'TRAIN'
+                    )
+                    
                     trades_df = trades_df.sort_values('date', ascending=False)
                     
+                    # Style function for color-coding
+                    def highlight_trades(row):
+                        if row['action'] == 'BUY':
+                            return ['background-color: #d4edda'] * len(row)  # Light green
+                        elif row['action'] == 'SELL':
+                            return ['background-color: #f8d7da'] * len(row)  # Light red
+                        elif row['action'] == 'TAKE_PROFIT':
+                            return ['background-color: #d1ecf1'] * len(row)  # Light blue
+                        elif row['action'] == 'STOP_LOSS':
+                            return ['background-color: #fff3cd'] * len(row)  # Light yellow/orange
+                        else:
+                            return [''] * len(row)
+                    
+                    # Apply styling
+                    styled_df = trades_df[['period', 'date', 'action', 'price', 'shares', 'value', 'reason']].style.apply(
+                        highlight_trades, axis=1
+                    )
+                    
                     st.dataframe(
-                        trades_df[['date', 'action', 'price', 'shares', 'value', 'reason']],
+                        styled_df,
                         hide_index=True,
                         use_container_width=True
                     )
                     
-                    st.caption(f"Total trades: {len(trades_df)}")
+                    # Show breakdown and legend
+                    train_count = (trades_df['period'] == 'TRAIN').sum()
+                    test_count = (trades_df['period'] == '🎯 TEST').sum()
+                    st.caption(f"**Total trades: {len(trades_df)}** | Training: {train_count} | 🎯 Testing: {test_count}")
+                    st.caption("🟢 Green = BUY | 🔴 Red = SELL | 🔵 Blue = TAKE_PROFIT | 🟡 Yellow = STOP_LOSS")
                 else:
                     st.info("No trades executed in backtest")
         
